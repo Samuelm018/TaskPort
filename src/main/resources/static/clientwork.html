@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TaskPort - Client Dashboard</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://kit.fontawesome.com/a2d9b6f6d3.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo"><h1>TaskPort</h1></div>
+      <div class="header-actions">
+        <button class="btn ghost" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <div class="grid-2 mt-16">
+      <div>
+        <div class="card">
+          <h3>Submit a Project</h3>
+          <div class="small">Describe your task and preferred budget. Our admins will review and respond.</div>
+          <div class="form-row mt-12">
+            <label for="title" class="small">Title</label>
+            <input id="title" class="input" placeholder="Short project title" aria-label="Title" />
+          </div>
+          <div class="form-row mt-8">
+            <label for="description" class="small">Description</label>
+            <textarea id="description" class="input" rows="5" placeholder="Describe your project in detail" aria-label="Description"></textarea>
+          </div>
+          <div class="form-row mt-8 grid-3">
+            <div>
+              <label for="costMin" class="small">Min Budget</label>
+              <input id="costMin" class="input" type="number" placeholder="0" aria-label="Min Budget" />
+            </div>
+            <div>
+              <label for="costMax" class="small">Max Budget</label>
+              <input id="costMax" class="input" type="number" placeholder="1000" aria-label="Max Budget" />
+            </div>
+            <div>
+              <label for="deadline" class="small">Deadline</label>
+              <input id="deadline" class="input" type="date" aria-label="Deadline" />
+            </div>
+          </div>
+          <div class="mt-12 row-center">
+            <button class="btn" onclick="submitProject()">Submit Project</button>
+            <button class="btn ghost" onclick="location.href='/clientProjectsList.html'">My Projects</button>
+          </div>
+        </div>
+        
+      </div>
+
+      <div>
+        <div class="card promo-card" aria-hidden>
+          <div class="floating-shapes" aria-hidden>
+            <span class="shape s1"></span>
+            <span class="shape s2"></span>
+            <span class="shape s3"></span>
+          </div>
+          <div class="promo-body">
+            <h4>TaskPort</h4>
+            <div class="small">Fast, simple way to connect with clients for startups and freelancers.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    async function ensureSession(){
+      const r = await fetch('/api/projects/my');
+      if(r.status===401) location.href='/clientLogin.html';
+    }
+    ensureSession();
+
+    function logout(){ fetch('/api/logout',{method:'POST'}).finally(()=>location.href='/'); }
+
+    async function submitProject(){
+      const title = document.getElementById('title').value.trim();
+      const description = document.getElementById('description').value.trim();
+      const costMin = document.getElementById('costMin').value;
+      const costMax = document.getElementById('costMax').value;
+      const deadline = document.getElementById('deadline').value;
+
+      if(!title){alert('Please provide a title');return}
+
+      const res = await fetch('/api/projects',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title,description,costMin,costMax,deadline})});
+      if(!res.ok){
+        const txt = await res.text().catch(()=>null);
+        alert('Failed to submit project' + (txt?(': '+txt):''));
+        return
+      }
+      location.href='/success.html';
+    }
+
+    
+  </script>
+</body>
+</html>

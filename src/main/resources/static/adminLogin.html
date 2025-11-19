@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TaskPort - Admin Login</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container auth-center-full">
+    <div class="card auth-card-large">
+      <div class="logo">
+        <svg width="56" height="56" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="auth-illustration">
+          <rect width="64" height="64" rx="12" fill="#0f1724" />
+          <path d="M16 36L28 24l20 20" stroke="#60a5fa" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </div>
+      <div class="logo"><h2>TaskPort - Admin</h2></div>
+      <p class="small mt-8">Administrator access only</p>
+      <div class="auth-panel">
+        <label class="small">Email</label>
+        <input class="input" id="adminGmail" placeholder="admin@company.com" />
+        <label class="small label-spaced">Password</label>
+        <input class="input" id="adminPassword" type="password" placeholder="••••••" />
+      </div>
+      <div class="mt-16"><button class="btn btn-wide" onclick="login()">Login</button></div>
+      <div id="err"></div>
+    </div>
+  </div>
+
+<script>
+async function login(){
+  const gmail=document.getElementById('adminGmail').value;const password=document.getElementById('adminPassword').value;
+  const res = await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({gmail,password})});
+  if(!res.ok){const t=await res.text();document.getElementById('err').innerText=t;document.getElementById('err').style.display='block';return}
+  // server will set session cookie; redirect to admin dashboard
+  location.href='/adminwork.html';
+}
+</script>
+</body>
+</html>

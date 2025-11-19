@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TaskPort - Project Details</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="card" id="content" style="padding:22px"></div>
+    
+  </div>
+<script>
+const urlParams=new URLSearchParams(window.location.search);const id=urlParams.get('id');
+async function load(){
+  if(!id){document.getElementById('content').innerText='No project id';return}
+  // try admin pending first, then client's own projects
+  let project=null;
+  try{const res=await fetch('/api/admin/pending'); if(res.ok){const list=await res.json(); project=list.find(p=>p.id==id)}}catch(e){}
+  if(!project){const res=await fetch('/api/projects/my'); if(res.ok){const mine=await res.json(); project=mine.find(p=>p.id==id)}}
+  if(!project){document.getElementById('content').innerText='Project not found';return}
+
+  document.getElementById('content').innerHTML = `
+    <div style="display:flex;gap:18px;flex-wrap:wrap">
+      <div style="flex:1;min-width:260px">
+        <h3>${project.title} <span id="statusBadge"></span></h3>
+        <script>/* placeholder to satisfy template placement */</script>
+        <div class='small'>By Client: ${project.clientName||project.clientId||'—'}</div>
+        <div style="margin-top:12px"><strong>Deadline:</strong> ${project.deadline||'—'}</div>
+        <div style="margin-top:8px"><strong>Budget:</strong> ${project.costMin||'—'} — ${project.costMax||'—'}</div>
+        <div style="margin-top:12px" class='card'><div style='max-height:220px;overflow:auto'>${project.description||'No description'}</div></div>
+      </div>
+      <div style="width:320px;min-width:260px">
+        <div class='card'>
+          <div style='display:flex;gap:8px;justify-content:space-between;align-items:center'><div><button class='btn' onclick='accept()' style='background:var(--success)'>Accept</button></div><div><button class='btn ghost' onclick='reject()' style='border-color:var(--danger);color:var(--danger)'>Reject</button></div></div>
+          <div style='margin-top:12px'><textarea id='msg' class='input' placeholder='Private message to client' rows='4'></textarea>
+          <div style='text-align:right;margin-top:8px'><button onclick='sendMsg()' class='btn'>Send</button></div></div>
+        </div>
+      </div>
+    </div>
+  `;
+  // render status badge
+  const badgeEl = document.getElementById('statusBadge');
+  if(badgeEl){
+    let s='';
+    if(project.status==='PENDING') s=`<span class="status-pending">Pending</span>`;
+    else if(project.status==='ACCEPTED') s=`<span class="status-accepted">Accepted</span>`;
+    else if(project.status==='COMPLETED') s=`<span class="status-completed">Completed</span>`;
+    else if(project.status==='REJECTED') s=`<span class="status-rejected">Rejected</span>`;
+    else s=`<span class="small">${project.status}</span>`;
+    badgeEl.innerHTML = ' ' + s;
+  }
+}
+function accept(){fetch(`/api/admin/${id}/accept`,{method:'POST'}).then(r=>r.ok?alert('Accepted'):alert('Failed'))}
+function reject(){fetch(`/api/admin/${id}/reject`,{method:'POST'}).then(r=>r.ok?alert('Rejected'):alert('Failed'))}
+function sendMsg(){const m=document.getElementById('msg').value;fetch(`/api/admin/${id}/message`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:m})}).then(r=>r.ok?alert('Message sent'):alert('Failed'))}
+load();
+</script>
+</body>
+</html>

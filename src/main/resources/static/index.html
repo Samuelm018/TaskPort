@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TaskPort - Choose Portal</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://kit.fontawesome.com/a2d9b6f6d3.js" crossorigin="anonymous"></script>
+  <style>html,body{height:100%}.hero-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#2563EB 0%, #6366F1 100%);padding:40px}</style>
+</head>
+<body>
+  <div class="hero-wrap">
+    <div class="card card-wide">
+      <div class="flex-1 text-center">
+        <div class="logo logo-centered"><h1 class="brand-title">TaskPort</h1></div>
+        <h2 class="h2-muted">Choose Your Portal</h2>
+        <p class="small p-muted">Select how you want to access the platform.</p>
+      </div>
+
+      <div class="flex-1 portal-actions">
+        <div class="card card-300" onclick="location.href='/clientLogin.html'">
+          <div class="card-row">
+            <div class="icon-lg icon-primary"><i class="fas fa-user-circle"></i></div>
+            <div>
+              <h3 class="no-margin">Client Portal</h3>
+              <p class="small">Submit your project requirements.</p>
+            </div>
+          </div>
+          <div class="mt-14"><button class="btn btn-full">Enter Client Portal</button></div>
+        </div>
+
+        <div class="card card-300" onclick="location.href='/adminLogin.html'">
+          <div class="card-row">
+            <div class="icon-lg icon-accent"><i class="fas fa-shield-check"></i></div>
+            <div>
+              <h3 class="no-margin">Admin Portal</h3>
+              <p class="small">Manage and review client projects.</p>
+            </div>
+          </div>
+          <div class="mt-14"><button class="btn btn-ghost-white">Enter Admin</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

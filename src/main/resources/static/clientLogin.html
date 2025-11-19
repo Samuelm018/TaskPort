@@ -1,0 +1,129 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TaskPort - Client Login / Signup</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://kit.fontawesome.com/a2d9b6f6d3.js" crossorigin="anonymous"></script>
+  <!-- Using global CSS for auth styles -->
+</head>
+<body>
+  <div class="container">
+    <div class="auth-split">
+      <div class="auth-branding card">
+        <!-- Inline abstract SVG illustration for TaskPort -->
+        <svg width="320" height="200" viewBox="0 0 640 400" fill="none" xmlns="http://www.w3.org/2000/svg" class="auth-illustration">
+          <rect x="0" y="0" width="640" height="400" rx="20" fill="url(#g)" />
+          <defs>
+            <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#0f1724" stop-opacity="1"/>
+              <stop offset="1" stop-color="#0b1220" stop-opacity="1"/>
+            </linearGradient>
+          </defs>
+          <g opacity="0.95">
+            <circle cx="140" cy="120" r="80" fill="#1f2937" />
+            <rect x="280" y="80" width="220" height="140" rx="16" fill="#111827" />
+            <path d="M330 140h140" stroke="#60a5fa" stroke-width="6" stroke-linecap="round"/>
+            <path d="M330 170h100" stroke="#34d399" stroke-width="6" stroke-linecap="round"/>
+          </g>
+        </svg>
+        <h1 class="auth-hero-title">Welcome to TaskPort</h1>
+        <p class="small auth-hero-desc">Submit project requests, track progress, and communicate with our team — fast, simple, and secure.</p>
+      </div>
+
+      <div class="auth-form-area card">
+        <div class="tab-bar" role="tablist">
+          <div id="tabLogin" class="tab" role="tab" aria-selected="true" aria-controls="loginPanel">Login</div>
+          <div id="tabSignup" class="tab" role="tab" aria-selected="false" aria-controls="signupPanel">Signup</div>
+        </div>
+
+        <div id="loginPanel" class="auth-panel" role="tabpanel" aria-labelledby="tabLogin">
+          <label class="small">Email</label>
+          <input class="input" id="loginGmail" placeholder="you@company.com" />
+          <label class="small label-spaced">Password</label>
+          <input class="input" id="loginPassword" type="password" placeholder="••••••••" />
+          <!-- Removed Remember me and Forgot? options -->
+          <div class="mt-16"><button class="btn btn-full" onclick="login()">Login</button></div>
+          <div id="loginError"></div>
+        </div>
+
+        <div id="signupPanel" class="auth-panel hidden" role="tabpanel" aria-labelledby="tabSignup">
+          <label class="small">Username</label>
+          <input class="input" id="signupUsername" placeholder="Your name" />
+          <label class="small label-spaced">Gmail</label>
+          <input class="input" id="signupGmail" placeholder="you@company.com" />
+          <label class="small label-spaced">Password</label>
+          <input class="input" id="signupPassword" type="password" placeholder="Create a strong password" />
+          <div class="strength" aria-hidden><i id="strengthBar"></i></div>
+          <div id="signupRules" class="signup-rules">
+            <strong>Password rules:</strong>
+            <ul>
+              <li>Minimum length: 6 characters</li>
+              <li>At least one special character (e.g. ! @ # $ % ^ & *)</li>
+            </ul>
+          </div>
+          <div class="mt-14"><button class="btn btn-full" onclick="signup()">Create account</button></div>
+          <div id="signupError"></div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+
+  <script>
+    const tabLogin=document.getElementById('tabLogin'),tabSignup=document.getElementById('tabSignup');
+    function activateTab(tabId){
+      const loginT=document.getElementById('tabLogin'), signupT=document.getElementById('tabSignup');
+      const loginP=document.getElementById('loginPanel'), signupP=document.getElementById('signupPanel');
+      if(tabId==='login'){
+        loginT.classList.add('active'); loginT.setAttribute('aria-selected','true'); loginT.focus();
+        signupT.classList.remove('active'); signupT.setAttribute('aria-selected','false');
+        loginP.classList.remove('hidden'); signupP.classList.add('hidden');
+      } else {
+        signupT.classList.add('active'); signupT.setAttribute('aria-selected','true'); signupT.focus();
+        loginT.classList.remove('active'); loginT.setAttribute('aria-selected','false');
+        signupP.classList.remove('hidden'); loginP.classList.add('hidden');
+      }
+    }
+    tabLogin.addEventListener('click',()=>activateTab('login'));
+    tabSignup.addEventListener('click',()=>activateTab('signup'));
+
+    const strengthBar=document.getElementById('strengthBar');
+    const signupRulesEl = document.getElementById('signupRules');
+    document.getElementById('signupPassword').addEventListener('input',e=>{
+      const v=e.target.value;let score=0;
+      if(v.length>7)score+=40; if(/[A-Z]/.test(v))score+=20; if(/[0-9]/.test(v))score+=20; if(/[^A-Za-z0-9]/.test(v))score+=20;
+      score=Math.min(100,score);
+      strengthBar.style.width=score+'%';
+      // show rules when user focuses/edits weak password
+      if(v.length>0 && (v.length<6 || !/[^A-Za-z0-9]/.test(v))){ signupRulesEl.style.display='block'; } else { signupRulesEl.style.display='none'; }
+    });
+
+    async function signup(){
+      const username=document.getElementById('signupUsername').value, gmail=document.getElementById('signupGmail').value, password=document.getElementById('signupPassword').value;
+      // validation: minimum length 6 and at least one special character
+      const hasSpecial = /[^A-Za-z0-9]/.test(password);
+      if(!password || password.length < 6 || !hasSpecial){
+        document.getElementById('signupError').style.display='block';
+        document.getElementById('signupError').innerText='Enter a strong password. See rules below.';
+        document.getElementById('signupRules').style.display='block';
+        return;
+      }
+      // hide any previous errors
+      document.getElementById('signupError').style.display='none';
+      document.getElementById('signupRules').style.display='none';
+      const res=await fetch('/api/client/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,gmail,password})});
+      if(!res.ok){const t=await res.text();document.getElementById('signupError').style.display='block';document.getElementById('signupError').innerText=t;return}
+      location.href='/clientwork.html';
+    }
+
+    async function login(){
+      const gmail=document.getElementById('loginGmail').value,password=document.getElementById('loginPassword').value;
+      const res=await fetch('/api/client/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({gmail,password})});
+      if(!res.ok){const t=await res.text();document.getElementById('loginError').style.display='block';document.getElementById('loginError').innerText=t;return}
+      location.href='/clientwork.html';
+    }
+  </script>
+</body>
+</html>

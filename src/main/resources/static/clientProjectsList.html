@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TaskPort - My Projects</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="space-between">
+        <div>
+          <h3>My Projects</h3>
+          <div class="small">Overview of all your submitted projects.</div>
+        </div>
+        <div><button class="btn ghost" onclick="location.href='/clientwork.html'">New Project</button></div>
+      </div>
+
+      <div id="list" class="mt-16"></div>
+    </div>
+    
+  </div>
+
+  <div id="messageModal" class="modal hidden"><div class="card"><h4>Admin Message</h4><div id="modalBody" class="small modal-body"></div><div class="text-right mt-14"><button class="btn ghost" onclick="closeModal()">Close</button></div></div></div>
+
+<script>
+async function load(){
+  const res = await fetch('/api/projects/my');
+  if(res.status===401){ location.href='/clientLogin.html'; return }
+  const list = await res.json();
+  const container = document.getElementById('list');
+  container.innerHTML='';
+  list.forEach(p=>{
+    const div=document.createElement('div');div.className='project-card project-row';
+    const left=document.createElement('div');left.className='flex-1';left.innerHTML=`<strong>${p.title}</strong><div class='small mt-8'>${p.description?p.description.substring(0,160):''}</div>`;
+    const right=document.createElement('div');
+    let status='';
+    if(p.status==='PENDING') status = '<span class="status-pending">Pending</span>';
+    else if(p.status==='ACCEPTED') status = '<span class="status-accepted">Accepted</span>';
+    else if(p.status==='COMPLETED') status = '<span class="status-completed">Completed</span>';
+    else if(p.status==='REJECTED') status = '<span class="status-rejected">Rejected</span>';
+    else status = `<span class="small">${p.status}</span>`;
+    right.innerHTML=`${status}<div class='actions-right'><button class='btn ghost' onclick='openMessages(${p.id})'>Message</button><button class='btn' style='background:var(--danger);' onclick='deleteProject(${p.id})'>Delete</button></div>`;
+    div.appendChild(left);div.appendChild(right);container.appendChild(div);
+  });
+}
+
+function openMessages(id){
+  fetch(`/api/projects/${id}/messages`).then(r=>r.json()).then(data=>{
+    let msgs = (data.messages||data||[]);
+    if(!msgs || msgs.length===0){document.getElementById('modalBody').innerText='No messages yet.'} else {document.getElementById('modalBody').innerHTML = msgs.map(m=>`<div class="msg-item">${m.message}</div>`).join('')}
+    document.getElementById('messageModal').classList.remove('hidden');
+  }).catch(()=>{alert('Failed to load messages')});
+}
+function closeModal(){document.getElementById('messageModal').classList.add('hidden');}
+
+async function deleteProject(id){ if(!confirm('Delete project?')) return; const res=await fetch(`/api/projects/${id}`,{method:'DELETE'}); if(res.ok) load(); else alert('Failed to delete') }
+
+load();
+</script>
+</body>
+</html>
